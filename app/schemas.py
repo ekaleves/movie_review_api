@@ -10,14 +10,25 @@ class MovieBase(BaseModel):
     genre: str
     writers: Optional[str] = None
     actors: Optional[str] = None
+    average_score: Optional[float] = None
 
 
 class MovieCreate(MovieBase):
     pass
 
 
+class MovieUpdate(BaseModel):
+    movie_name: Optional[str] = None
+    movie_year: Optional[str] = None
+    description: Optional[str] = None
+    genre: Optional[str] = None
+    writers: Optional[str] = None
+    actors: Optional[str] = None
+
+
 class MovieConfig(MovieBase):
     id: int
+    average_score: Optional[float] = None
 
     model_config = {
         "from_attributes": True
@@ -62,6 +73,7 @@ class UserCreate(UserBase):
 
 class UserOut(UserBase):
     id: int
+    is_admin: bool
 
     model_config = {
         "from_attributes": True

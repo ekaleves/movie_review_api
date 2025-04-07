@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 from app import schemas, crud, models
-from app.database import SessionLocal
 from fastapi import HTTPException
-from typing import Optional, List
-from datetime import date
+from typing import List
 from app.database import get_db
 from fastapi.security import OAuth2PasswordRequestForm
 from app.auth import create_access_token
@@ -90,6 +88,49 @@ def login_for_access_toke(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+@router.patch("/reviews/{review_id}", response_model=schemas.ReviewConfig)
+def update_review(
+        review_id: int,
+        review_data: schemas.ReviewUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    updated = crud.partial_update_review(db, review_id, review_data, current_user)  # type: ignore
+    if updated is None:
+        raise HTTPException(status_code=404, detail="Review not found.")
+    return updated
+
+
+@router.patch("/movies/{movie_id}", response_model=schemas.MovieConfig)
+def update_movie(
+        movie_id: int,
+        movie_data: schemas.MovieUpdate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    return crud.partial_updated_movie(db, movie_id, movie_data, current_user)
+
+
+@router.delete("/reviews/{review_id}")
+def delete_review(
+        review_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only Administrator users can delete reviews.")
+    return crud.delete_review(db, review_id)
+
+
+@router.delete("/movies/{movie_id}")
+def delete_movie(
+        movie_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Only Administrator users can delete movies.")
+    return crud.delete_movie(db, movie_id)
 
 
 
